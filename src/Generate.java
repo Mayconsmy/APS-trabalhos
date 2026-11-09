@@ -58,10 +58,19 @@ public class Generate {
     }
 
     // ---------- sequence helpers ----------
+    static INodePresentation lifeActor(IClass base, double x, double len) throws Exception {
+        INodePresentation lp = sde.createLifeline("", x);
+        ((ILifeline) lp.getModel()).setBase(base);
+        lp.setProperty("lifeline_length", String.valueOf((int) len));
+        return lp;
+    }
+
     static INodePresentation life(IClass base, String name, double x, double len) throws Exception {
         INodePresentation lp = sde.createLifeline(name, x);
         ((ILifeline) lp.getModel()).setBase(base);
         lp.setProperty("lifeline_length", String.valueOf((int) len));
+        String lbl = lp.getLabel();
+        if (lbl != null) lp.setWidth(Math.max(120, 55 + 7.0 * lbl.length()));
         return lp;
     }
 
@@ -69,6 +78,11 @@ public class Generate {
         ILinkPresentation m = sde.createMessage(name, a, b, y);
         if (args != null && args.length() > 0) ((IMessage) m.getModel()).setArgument(args);
         return m;
+    }
+
+    static void shiftLabelX(ILinkPresentation m, double dx) throws Exception {
+        double x = Double.parseDouble(m.getProperty("name.point.x"));
+        m.setProperty("name.point.x", String.valueOf(x + dx));
     }
 
     static ILinkPresentation ret(String name, ILinkPresentation base) throws Exception {
@@ -138,7 +152,7 @@ public class Generate {
         IClass banco = cls(p, "Banco");
 
         ISequenceDiagram d = sde.createSequenceDiagram(project, title(1));
-        INodePresentation cl = life(cliente, "", 50, 750);
+        INodePresentation cl = lifeActor(cliente, 50, 750);
         INodePresentation cx = life(caixa, "", 350, 750);
         INodePresentation bc = life(banco, "", 700, 750);
 
@@ -162,14 +176,15 @@ public class Generate {
         IClass pag = cls(p, "PaginaPrincipal");
 
         ISequenceDiagram d = sde.createSequenceDiagram(project, title(2));
-        INodePresentation vp = life(visitante, "", 50, 820);
+        INodePresentation vp = lifeActor(visitante, 50, 820);
         INodePresentation tp = life(tela, "", 300, 820);
         INodePresentation sp = life(sis, "", 600, 820);
         INodePresentation pp = life(pag, "", 900, 820);
 
         msg("informarCredenciais", "email, senha", vp, tp, 100);
         msg("autenticar", "email, senha", tp, sp, 165);
-        msg("verificarCredenciais", "email, senha", sp, sp, 230);
+        ILinkPresentation m3 = msg("verificarCredenciais", "", sp, sp, 230);
+        shiftLabelX(m3, -170);
 
         ILinkPresentation m4 = msg("consultarResultado", "", tp, sp, 330);
         ILinkPresentation r4 = ret("credenciaisValidas", m4);
@@ -195,14 +210,14 @@ public class Generate {
         IClass itemCls = cls(p, "ItemDoCarrinho");
 
         ISequenceDiagram d = sde.createSequenceDiagram(project, title(3));
-        INodePresentation cp = life(consumidor, "", 50, 760);
+        INodePresentation cp = lifeActor(consumidor, 50, 760);
         INodePresentation pg = life(pagProd, "", 300, 760);
         INodePresentation cr = life(carrinho, "", 600, 760);
-        INodePresentation it = life(itemCls, "item", 900, 760);
+        INodePresentation it = life(itemCls, "item", 980, 760);
 
         msg("clicarAdicionar", "produto", cp, pg, 100);
         msg("adicionarProduto", "produto, quantidade", pg, cr, 165);
-        ILinkPresentation cm = sde.createCreateMessage("ItemDoCarrinho", cr, it, 250);
+        ILinkPresentation cm = sde.createCreateMessage("criarItem", cr, it, 250);
         ((IMessage) cm.getModel()).setArgument("produto, quantidade");
         ILinkPresentation m4 = msg("consultarCarrinho", "", pg, cr, 350);
         ret("itemAdicionado", m4);
@@ -217,14 +232,15 @@ public class Generate {
         IClass itemCls = cls(p, "ItemDoCarrinho");
 
         ISequenceDiagram d = sde.createSequenceDiagram(project, title(4));
-        INodePresentation cp = life(consumidor, "", 50, 650);
+        INodePresentation cp = lifeActor(consumidor, 50, 650);
         INodePresentation pg = life(pagCarr, "", 320, 650);
         INodePresentation cr = life(carrinho, "", 650, 650);
         INodePresentation it = life(itemCls, "item", 950, 650);
 
         msg("clicarRemover", "item", cp, pg, 100);
         msg("removerItem", "item", pg, cr, 165);
-        msg("localizarItem", "item", cr, cr, 240);
+        ILinkPresentation m3 = msg("localizarItem", "", cr, cr, 240);
+        shiftLabelX(m3, -150);
         ILinkPresentation dm = sde.createDestroyMessage("destruir", cr, it, 320);
         ((IMessage) dm.getModel()).setArgument("item");
         ILinkPresentation m5 = msg("consultarRemocao", "", pg, cr, 400);
@@ -241,7 +257,7 @@ public class Generate {
         IClass ordem = cls(p, "OrdemDeEntrega");
 
         ISequenceDiagram d = sde.createSequenceDiagram(project, title(5));
-        INodePresentation cl = life(cliente, "", 50, 850);
+        INodePresentation cl = lifeActor(cliente, 50, 850);
         INodePresentation cr = life(carrinho, "", 280, 850);
         INodePresentation it = life(itemCls, "item", 540, 850);
         INodePresentation gw = life(gateway, "", 780, 850);
@@ -414,7 +430,7 @@ public class Generate {
         ILinkPresentation agl = link(agg, pn, inn);
         link(real, inn, cn);
         ILinkPresentation dl = link(dep, cn, pn);
-        note("ProdutoLeilao mantém 0..* Interessados\ne os notifica quando o preço muda.", 70, 500, agl);
+        note("ProdutoLeilao mantém 0..* Interessados\ne os notifica quando o preço muda.", 70, 500, pn);
         note("Interessado define atualizar(novoPreco);\nComprador implementa a interface.", 1000, 60, inn);
         hideFrame(d);
     }
