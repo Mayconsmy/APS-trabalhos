@@ -470,21 +470,21 @@ public class Generate {
         IDependency d2 = bme.createDependency(ep, dp, "cria");
 
         IClassDiagram d = cde.createClassDiagram(project, title(10));
-        INodePresentation en = node(editor, 430, 50);
-        INodePresentation etn = node(et, 100, 300);
-        INodePresentation epn = node(ep, 720, 300);
-        INodePresentation dn = node(doc, 430, 560);
-        INodePresentation dtn = node(dt, 100, 810);
-        INodePresentation dpn = node(dp, 720, 810);
+        INodePresentation en = node(editor, 500, 50);
+        INodePresentation etn = node(et, 120, 300);
+        INodePresentation epn = node(ep, 760, 300);
+        INodePresentation dn = node(doc, 500, 560);
+        INodePresentation dtn = node(dt, 120, 810);
+        INodePresentation dpn = node(dp, 760, 810);
         link(g1, en, etn);
         link(g2, en, epn);
         link(g3, dn, dtn);
         link(g4, dn, dpn);
         ILinkPresentation l1 = link(d1, etn, dtn);
         ILinkPresentation l2 = link(d2, epn, dpn);
-        note("Factory Method: criarDocumento() é abstrato\ne define o ponto de criação do produto.", 940, 90, en);
-        note("EditorDeTexto cria DocumentoDeTexto;\nEditorDePlanilha cria DocumentoDePlanilha.", 900, 430, l1);
-        note("Subclasses concretas instanciam\no produto correspondente.", 60, 690, dn);
+        note("Factory Method: criarDocumento() é abstrato\ne define o ponto de criação do produto.", 1060, 70, en);
+        note("EditorDeTexto cria DocumentoDeTexto;\nEditorDePlanilha cria DocumentoDePlanilha.", 1100, 300, epn);
+        note("Subclasses concretas instanciam\no produto correspondente.", 500, 700, dn);
         hideFrame(d);
     }
 }
